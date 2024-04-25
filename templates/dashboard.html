@@ -1,21 +1,48 @@
 {% extends 'base.html' %}
 
-{% block script %}
-<script>
-const fileInput = document.getElementById("fileUpload")
-const test = document.getElementById("test")
-
-function upload() {
-    for (const file in fileInput.files) {
-       test.innerText = file.name
+{% block style %}
+<style>
+    li {
+        display: flex;
     }
 
-    location.reload()
-}
+    .link {
+        margin-right: 10px;
+    }
+</style>
+{% endblock %}
+
+{% block script %}
+<script>
+    function remove(code) {
+        fetch('/api/remove', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ code: code })
+        }).then(response => {
+            location.reload()
+        })
+            .catch(error => {
+                console.error('Error:', error);
+            });
+    }
 </script>
 {% endblock %}
 
 {% block body %}
-<input type="file" name="file" id="fileUpload" onchange="upload()">
-<p id="test">test</p>
+<form action="/api/add" method="post" enctype="multipart/form-data">
+    <input type="file" name="file" />
+    <input type="submit" value="Upload">
+</form>
+<hr>
+<ul>
+    {% for code, name in files -%}
+    <li>
+        <a href="/{{ code }}" class="link">{{ name }}</a>
+        <button onclick="remove('{{ code }}')">Delete</button>
+    </li>
+    {% endfor %}
+</ul>
 {% endblock %}
