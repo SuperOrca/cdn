@@ -6,8 +6,16 @@
         display: flex;
     }
 
+    input {
+        margin-right: 10px;
+    }
+
     .link {
         margin-right: 10px;
+    }
+
+    progress {
+        width: 320px;
     }
 </style>
 {% endblock %}
@@ -28,13 +36,43 @@
                 console.error('Error:', error);
             });
     }
+
+    document.addEventListener('DOMContentLoaded', function () {
+        const form = document.querySelector('form');
+        const progressBar = document.getElementById('progressBar');
+
+        form.onsubmit = function (event) {
+            event.preventDefault();
+            const formData = new FormData(form);
+            const xhr = new XMLHttpRequest();
+
+            xhr.open('POST', '/api/add', true);
+            xhr.upload.onprogress = function (e) {
+                if (e.lengthComputable) {
+                    const percentComplete = (e.loaded / e.total) * 100;
+                    progressBar.value = percentComplete;
+                }
+            };
+            xhr.onload = function () {
+                if (xhr.status == 200) {
+                    location.reload();
+                } else {
+                    alert('Upload failed. Server responded with status: ' + xhr.status);
+                }
+            };
+            xhr.send(formData);
+        };
+    });
 </script>
 {% endblock %}
 
 {% block body %}
 <form action="/api/add" method="post" enctype="multipart/form-data">
-    <input type="file" name="file" />
-    <input type="submit" value="Upload">
+    <div class="upload-controls">
+        <input type="file" name="file">
+        <input type="submit" value="Upload">
+        <progress id="progressBar" value="0" max="100"></progress>
+    </div>
 </form>
 <hr>
 <ul>
